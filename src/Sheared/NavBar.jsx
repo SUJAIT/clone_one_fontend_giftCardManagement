@@ -46,6 +46,11 @@ const NavBar = () => {
       label: 'Dollar-Upload',
       path: '/dollar-upload',
       show: role === 'admin'
+    },
+    {
+      label: 'Uploaded-History',
+      path: '/uploaded-history',
+      show: role === 'admin'
     }
   ];
 

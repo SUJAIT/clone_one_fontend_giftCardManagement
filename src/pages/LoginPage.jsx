@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../axios/axios";
 import { AuthContext } from "../providers/AuthProvider";
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const [loginData, setLoginData] = useState({
@@ -20,34 +21,64 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    try {
-      const res = await axiosInstance.post("/user/user-login", loginData);
-      const { token, user } = res.data;
+  //   try {
+  //     const res = await axiosInstance.post("/user/user-login", loginData);
+  //     const { token, user } = res.data;
 
-      // ✅ Save token and set user in context
-      localStorage.setItem("token", token);
-      setUser(user); // 👈 context update
+  //     // ✅ Save token and set user in context
+  //     localStorage.setItem("token", token);
+  //     setUser(user); // 👈 context update
       
-      Swal.fire("Success!", "Logged in successfully", "success");
+  //     Swal.fire("Success!", "Logged in successfully", "success");
 
-      // ✅ Navigate by role
-      if (user.role === "admin") {
-        navigate("/dollar-upload");
-      } else {
-        navigate("/dollar-buy");
-      }
+  //     // ✅ Navigate by role
+  //     if (user.role === "admin") {
+  //       navigate("/dollar-upload");
+  //     } else {
+  //       navigate("/dollar-buy");
+  //     }
 
-    } catch (error) {
-      Swal.fire(
-        "Login Failed",
-        error.response?.data?.message || "Something went wrong",
-        "error"
-      );
+  //   } catch (error) {
+  //     Swal.fire(
+  //       "Login Failed",
+  //       error.response?.data?.message || "Something went wrong",
+  //       "error"
+  //     );
+  //   }
+  // };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axiosInstance.post("/user/user-login", loginData);
+    const { token } = res.data;
+
+    // Decode token manually
+    const decoded = jwtDecode(token);
+    const user = {
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    localStorage.setItem("token", token);
+    setUser(user); // 👈 directly update context
+
+    Swal.fire("Success!", "Logged in successfully", "success");
+
+    if (user.role === "admin") {
+      navigate("/dollar-upload");
+    } else {
+      navigate("/dollar-buy");
     }
-  };
+
+  } catch (error) {
+    Swal.fire("Login Failed", error.response?.data?.message || "Something went wrong", "error");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -80,9 +111,9 @@ const LoginPage = () => {
               />
             </div>
 
-            <div className="text-right text-sm text-blue-500 hover:underline cursor-pointer">
+            {/* <div className="text-right text-sm text-blue-500 hover:underline cursor-pointer">
               Forgot password?
-            </div>
+            </div> */}
 
             <button
               type="submit"

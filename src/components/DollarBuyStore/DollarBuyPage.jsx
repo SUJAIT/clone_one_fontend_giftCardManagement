@@ -20,8 +20,11 @@ const DollarBuyPage = () => {
   });
 
   const [selectedType, setSelectedType] = useState(null);
+  const [claimQuantity, setClaimQuantity] = useState("");
+  const [inputError, setInputError] = useState("");
   const [availableCodes, setAvailableCodes] = useState([]);
-  const [selectedCodes, setSelectedCodes] = useState([]);
+  const [revealedCodes, setRevealedCodes] = useState([]);
+  const [showCodeModal, setShowCodeModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -52,20 +55,68 @@ const DollarBuyPage = () => {
     fetchData();
   }, []);
 
-  const fetchAvailableCodes = async (amount) => {
-    try {
-      setSelectedType(amount);
-      const token = localStorage.getItem("token");
+  const handleClaim = async () => {
+    const quantity = parseInt(claimQuantity);
+    if (!quantity || quantity < 1) {
+      return setInputError("Enter a valid number");
+    }
+    setInputError("");
 
-      const res = await axiosInstance.get(`/gift-card/available/${amount}`, {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axiosInstance.get(`/gift-card/available/${selectedType}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setAvailableCodes(res.data.codes);
-      setSelectedCodes([]);
+      if (res.data.codes.length < quantity) {
+        return setInputError(`Only ${res.data.codes.length} codes available`);
+      }
+
+      const selected = res.data.codes.slice(0, quantity);
+
+      await axiosInstance.post(
+        "/gift-card/claim",
+        { codes: selected },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setAvailableCodes(selected);
+      setRevealedCodes(Array(selected.length).fill(false));
+      setShowCodeModal(true);
+      fetchData();
     } catch {
-      Swal.fire("Error", "Failed to load codes", "error");
+      Swal.fire("Error", "Claim failed", "error");
     }
+  };
+
+  const askClaimQuantity = (amount) => {
+    setSelectedType(amount);
+    setClaimQuantity("");
+    setAvailableCodes([]);
+    setRevealedCodes([]);
+    setShowCodeModal(false);
+  };
+
+  const revealAllCodes = () => {
+    setRevealedCodes(Array(availableCodes.length).fill(true));
+  };
+
+  const copyAllCodes = () => {
+    const revealed = availableCodes.filter((_, i) => revealedCodes[i]);
+    if (revealed.length > 0) {
+      navigator.clipboard.writeText(revealed.join(" "));
+      Swal.fire("Copied All", "All revealed codes copied", "success");
+    }
+  };
+
+  const resetAll = () => {
+    setSelectedType(null);
+    setClaimQuantity("");
+    setAvailableCodes([]);
+    setRevealedCodes([]);
+    setShowCodeModal(false);
   };
 
   const copyToClipboard = (text) => {
@@ -73,43 +124,11 @@ const DollarBuyPage = () => {
     Swal.fire("Copied", text, "success");
   };
 
-  const handleClaim = async () => {
-    if (selectedCodes.length === 0) {
-      return Swal.fire("Select at least one code", "", "warning");
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-
-      await axiosInstance.post(
-        "/gift-card/claim",
-        { codes: selectedCodes },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      Swal.fire("Claimed!", "Codes claimed successfully", "success");
-      setSelectedType(null);
-      fetchData();
-    } catch {
-      Swal.fire("Error", "Claim failed", "error");
-    }
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedCodes.length === availableCodes.length) {
-      setSelectedCodes([]);
-    } else {
-      setSelectedCodes([...availableCodes]);
-    }
-  };
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div
-          onClick={() => fetchAvailableCodes(2)}
+          onClick={() => askClaimQuantity(2)}
           className="bg-white rounded-xl shadow p-6 text-center cursor-pointer hover:bg-gray-50"
         >
           <h3 className="text-sm text-gray-500">$2 Cards</h3>
@@ -118,7 +137,7 @@ const DollarBuyPage = () => {
         </div>
 
         <div
-          onClick={() => fetchAvailableCodes(5)}
+          onClick={() => askClaimQuantity(5)}
           className="bg-white rounded-xl shadow p-6 text-center cursor-pointer hover:bg-gray-50"
         >
           <h3 className="text-sm text-gray-500">$5 Cards</h3>
@@ -127,20 +146,58 @@ const DollarBuyPage = () => {
         </div>
       </div>
 
-      {selectedType && (
+      {selectedType && !showCodeModal && (
         <div className="bg-white p-6 rounded-xl shadow-md border mt-4">
           <h2 className="text-lg font-semibold mb-3">
             Claim ${selectedType} Codes
           </h2>
 
-          <div className="flex justify-end mb-2">
+          <div className="mb-4">
+            <label className="text-sm text-gray-600 block mb-1">How many codes?</label>
+            <input
+              type="number"
+              value={claimQuantity}
+              onChange={(e) => setClaimQuantity(e.target.value)}
+              className="w-full border p-2 rounded"
+              placeholder="Enter quantity"
+              min={1}
+            />
+            {inputError && <p className="text-red-500 text-sm mt-1">{inputError}</p>}
+          </div>
+
+          <button
+            onClick={handleClaim}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Claim Codes
+          </button>
+        </div>
+      )}
+
+      {showCodeModal && (
+        <div className="bg-white p-6 rounded-xl shadow-md border mt-6">
+          <h2 className="text-lg font-semibold mb-4">Your Claimed Codes</h2>
+
+          <div className="flex justify-between mb-4">
+            <div className="flex gap-4">
+              <button
+                onClick={revealAllCodes}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Reveal All
+              </button>
+              <button
+                onClick={copyAllCodes}
+                className="text-sm text-green-600 hover:underline"
+              >
+                Copy All
+              </button>
+            </div>
             <button
-              onClick={toggleSelectAll}
-              className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200"
+              onClick={resetAll}
+              className="text-sm text-red-600 hover:underline"
             >
-              {selectedCodes.length === availableCodes.length
-                ? "Unselect All"
-                : "Select All"}
+              Close
             </button>
           </div>
 
@@ -150,44 +207,41 @@ const DollarBuyPage = () => {
                 key={index}
                 className="flex justify-between items-center border px-3 py-2 rounded-md"
               >
-                <input
-                  type="checkbox"
-                  checked={selectedCodes.includes(code)}
-                  onChange={() => {
-                    setSelectedCodes((prev) =>
-                      prev.includes(code)
-                        ? prev.filter((c) => c !== code)
-                        : [...prev, code]
-                    );
-                  }}
-                />
-                <p className="text-sm">{code}</p>
-                <button
-                  onClick={() => copyToClipboard(code)}
-                  className="text-xs text-blue-500 hover:underline"
-                >
-                  Copy
-                </button>
+                <p className="text-sm">
+                  {revealedCodes[index] ? code : "••••••••••••"}
+                </p>
+                <div className="flex gap-3">
+                  {!revealedCodes[index] && (
+                    <button
+                      onClick={() => {
+                        const updated = [...revealedCodes];
+                        updated[index] = true;
+                        setRevealedCodes(updated);
+                      }}
+                      className="text-xs text-blue-500 hover:underline"
+                    >
+                      Reveal
+                    </button>
+                  )}
+                  {revealedCodes[index] && (
+                    <button
+                      onClick={() => copyToClipboard(code)}
+                      className="text-xs text-green-600 hover:underline"
+                    >
+                      Copy
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-end">
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(selectedCodes.join(" "));
-                Swal.fire("Copied Selected!", "", "success");
-              }}
-              className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 text-sm"
+             onClick={() => askClaimQuantity(selectedType)}
+              className="bg-yellow-500 text-white px-6 py-2 rounded-md font-medium hover:bg-yellow-600 transition"
             >
-              Copy Selected
-            </button>
-
-            <button
-              onClick={handleClaim}
-              className="bg-green-700 text-white px-6 py-2 rounded-md font-medium hover:bg-green-800 transition"
-            >
-              Submit Claim
+              Redeem Again
             </button>
           </div>
         </div>

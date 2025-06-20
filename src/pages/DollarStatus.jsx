@@ -16,7 +16,7 @@ const DollarStatus = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-const res = await axios.get("https://sujait-gift-card-management-server.onrender.com/gift-card/stats");
+const res = await axios.get("http://localhost:5000/gift-card/stats");
         setTwoDollarCount(res.data.twoDollarCount);
         setFiveDollarCount(res.data.fiveDollarCount);
       } catch (error) {

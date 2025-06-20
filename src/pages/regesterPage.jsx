@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; // 👈 Import
+import { AuthContext } from "../providers/AuthProvider"; // 👈 Import context
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ const RegisterPage = () => {
   });
 
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext); // 👈 Get setUser from context
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -23,16 +26,22 @@ const RegisterPage = () => {
     e.preventDefault();
 
     try {
-const res = await axios.post("https://sujait-gift-card-management-server.onrender.com/user/user-register", formData); // Update with your backend URL
-      const { token, user } = res.data;
+      const res = await axios.post("http://localhost:5000/user/user-register", formData);
+      const { token } = res.data;
 
-      // ✅ Store token & user
+      // 👇 Decode token
+      const decoded = jwtDecode(token);
+      const user = {
+        email: decoded.email,
+        role: decoded.role,
+      };
+
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user); // 👈 Update context immediately
 
       Swal.fire("Success!", "Account created successfully", "success");
 
-      // ✅ Navigate based on role
+      // 👇 Navigate based on role
       if (user.role === "admin") {
         navigate("/dollar-upload");
       } else {
@@ -81,7 +90,7 @@ const res = await axios.post("https://sujait-gift-card-management-server.onrende
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
             >
               <option value="buyer">Buyer</option>
-              <option value="admin"  >Admin</option>
+              <option value="admin" disabled>Admin</option>
             </select>
           </div>
 
@@ -92,14 +101,15 @@ const res = await axios.post("https://sujait-gift-card-management-server.onrende
             Register
           </button>
         </form>
-<div className="text-center mt-2">
-            <span className="text-sm ">
-  Already have a account?{" "}
-  <Link to="/login" className="text-blue-600 hover:underline font-medium">
-    login
-  </Link>
-</span>
-</div>
+
+        <div className="text-center mt-2">
+          <span className="text-sm">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+              Login
+            </Link>
+          </span>
+        </div>
       </div>
     </div>
   );

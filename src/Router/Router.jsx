@@ -11,6 +11,7 @@ import DollarBuyPage from "../components/DollarBuyStore/DollarBuyPage";
 import DollarStatus from "../pages/DollarStatus";
 import Unauthorize from "../pages/Unauthorize";
 import RoleRoute from "../Middleware/ProtectRoute";
+import UploadedHistory from "../pages/UploadedHistory";
 // import RoleRoute from "../middleware/RoleRoute"; // ✅ Import middleware
 
 export const router = createBrowserRouter([
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
           {
             path: "/5$-upload",
             element: <FiveDollarInput />,
+          },
+          {
+            path: "/uploaded-history",
+            element: <UploadedHistory/>,
           },
         ],
       },
