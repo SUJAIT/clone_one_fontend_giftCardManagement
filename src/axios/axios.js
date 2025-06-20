@@ -1,19 +1,19 @@
 // import axios from "axios";
 
 // const axiosInstance = axios.create({
-//   baseURL: "http://localhost:5000", // ✅ তোমার backend এর URL
+//   baseURL: "https://sujait-gift-card-management-server.onrender.com", // ✅ তোমার backend এর URL
 //   withCredentials: false,
 // });
 
 // export default axiosInstance;
-// // http://localhost:5000/
+// // https://sujait-gift-card-management-server.onrender.com/
 
 
 
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://sujait-gift-card-management-server.onrender.com",
 });
 
 // Automatically attach token to every request if available
