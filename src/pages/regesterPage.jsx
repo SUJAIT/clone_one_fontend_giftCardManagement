@@ -90,7 +90,7 @@ const RegisterPage = () => {
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
             >
               <option value="buyer">Buyer</option>
-              <option value="admin" disabled>Admin</option>
+              <option value="admin" >Admin</option>
             </select>
           </div>
 
