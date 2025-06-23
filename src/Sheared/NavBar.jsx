@@ -32,7 +32,7 @@ const NavBar = () => {
       show: !user
     },
     {
-      label: 'Sign Out',
+      label: 'Sign-Out',
       path: '#',
       show: !!user,
       onClick: handleLogout
