@@ -26,7 +26,7 @@ const RegisterPage = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("https://sujait-gift-card-management-server.onrender.com/user/user-register", formData);
+      const res = await axios.post("https://clone-one-server-giftcardmanagement.onrender.com/user/user-register", formData);
       const { token } = res.data;
 
       // 👇 Decode token

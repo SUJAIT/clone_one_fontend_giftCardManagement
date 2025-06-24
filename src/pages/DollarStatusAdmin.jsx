@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const DollarStatus = () => {
+const DollarStatusAdmin = () => {
   const [twoDollarCount, setTwoDollarCount] = useState(0);
   const [fiveDollarCount, setFiveDollarCount] = useState(0);
 
@@ -69,4 +69,4 @@ const res = await axios.get("https://clone-one-server-giftcardmanagement.onrende
   );
 };
 
-export default DollarStatus;
+export default DollarStatusAdmin;

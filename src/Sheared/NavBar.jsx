@@ -51,6 +51,11 @@ const NavBar = () => {
       label: 'Uploaded-History',
       path: '/uploaded-history',
       show: role === 'admin'
+    },
+    {
+      label: 'Dollar-Status',
+      path: '/dollar-status-admin',
+      show: role === 'admin'
     }
   ];
 
@@ -60,7 +65,7 @@ const NavBar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2 text-xl font-bold text-green-800">
             <img src={logo} className="logo w-8 h-8 object-contain" alt="logo" />
-            <span>Sujait</span>
+            <span>$ Management</span>
           </div>
 
           {/* Desktop Menu */}

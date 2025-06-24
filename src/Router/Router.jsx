@@ -12,6 +12,7 @@ import DollarStatus from "../pages/DollarStatus";
 import Unauthorize from "../pages/Unauthorize";
 import RoleRoute from "../Middleware/ProtectRoute";
 import UploadedHistory from "../pages/UploadedHistory";
+import DollarStatusAdmin from "../pages/DollarStatusAdmin";
 // import RoleRoute from "../middleware/RoleRoute"; // ✅ Import middleware
 
 export const router = createBrowserRouter([
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
           {
             path: "/uploaded-history",
             element: <UploadedHistory/>,
+          },
+          {
+            path: "/dollar-status-admin",
+            element: <DollarStatusAdmin/>,
           },
         ],
       },
